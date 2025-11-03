@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chat en tiempo real</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Layout chat + DM */
+    .chat-layout {
+      display: grid;
+      grid-template-columns: 2fr 1.2fr;
+      gap: 1rem;
+    }
+
+    @media (max-width: 900px) {
+      .chat-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    #messages,
+    #dmMessages {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      max-height: 60vh;
+      overflow: auto;
+    }
+
+    #dmPanel {
+      display: none;
+    }
+
+    #dmPanel.active {
+      display: block;
+    }
+
+    .username-link {
+      font-weight: 700;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .muted {
+      color: #9fb0d0;
+      font-size: .9rem;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Chat en tiempo real</h1>
+    <nav>
+      <a href="/">Volver</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="chat-layout">
+      <!-- Chat global -->
+      <section class="card">
+        <h2>Global</h2>
+        <ul id="messages"></ul>
+        <div class="typing" id="typing"></div>
+        <form id="chatForm">
+          <input id="message" autocomplete="off" placeholder="Escribe un mensaje..." />
+          <button>Enviar</button>
+        </form>
+        <p class="muted">Tip: haz clic en el <strong>nombre</strong> de alguien para abrir un chat privado.</p>
+      </section>
+
+      <!-- Panel de DM -->
+      <section id="dmPanel" class="card">
+        <div class="toolbar">
+          <h2>Privado con <span id="dmWithName">—</span></h2>
+          <button id="dmClose" type="button">Cerrar</button>
+        </div>
+        <ul id="dmMessages"></ul>
+        <form id="dmForm" class="mt-2">
+          <input id="dmInput" autocomplete="off" placeholder="Mensaje privado..." />
+          <button>Enviar</button>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Debes iniciar sesión');
+      window.location.href = '/';
+    }
+
+    const socket = io({ auth: { token } });
+
+    // Global
+    const messages = document.getElementById('messages');
+    const form = document.getElementById('chatForm');
+    const input = document.getElementById('message');
+    const typing = document.getElementById('typing');
+
+    // DM UI
+    const dmPanel = document.getElementById('dmPanel');
+    const dmWithName = document.getElementById('dmWithName');
+    const dmMessages = document.getElementById('dmMessages');
+    const dmForm = document.getElementById('dmForm');
+    const dmInput = document.getElementById('dmInput');
+    const dmClose = document.getElementById('dmClose');
+
+    let currentDMUserId = null;
+
+    socket.on('connect', () => {
+      socket.emit('getUserInfo');
+    });
+
+    socket.on('userInfo', (data) => {
+      socket.userId = data.id;
+    });
+
+
+    socket.on('connect_error', (err) => {
+      alert('No autorizado o error de conexión en socket');
+      console.error(err);
+    });
+
+    // Cargar historial previo desde localStorage al abrir el chat
+    window.addEventListener('load', () => {
+      const saved = JSON.parse(localStorage.getItem('chatHistory') || '[]');
+      if (saved.length > 0) saved.forEach(addMsg);
+    });
+
+    // Cuando el servidor envía el historial (últimos 50)
+    socket.on('history', (history) => {
+      messages.innerHTML = '';
+      history.forEach(addMsg);
+      localStorage.setItem('chatHistory', JSON.stringify(history));
+    });
+
+    // Cuando llega un nuevo mensaje
+    socket.on('chat:message', (msg) => {
+      addMsg(msg);
+      const saved = JSON.parse(localStorage.getItem('chatHistory') || '[]');
+      saved.push(msg);
+      localStorage.setItem('chatHistory', JSON.stringify(saved));
+    });
+
+    // Alguien teclea
+    socket.on('chat:typing', (username) => {
+      typing.textContent = `${username} está escribiendo...`;
+      setTimeout(() => typing.textContent = '', 1000);
+    });
+
+    // --- Global: enviar ---
+    input.addEventListener('input', () => socket.emit('chat:typing'));
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (!text) return;
+      socket.emit('chat:message', text);
+      input.value = '';
+    });
+
+    // Renderizar mensaje global (usa createdAt y senderName/senderId)
+    function addGlobalMsg(msg) {
+      const li = document.createElement('li');
+      li.classList.add('message');
+      if (msg.senderId === socket.userId) li.classList.add('self');
+
+      const date = new Date(msg.createdAt || msg.time);
+      const time = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      // Detectar si es admin
+      const isAdmin = msg.senderName?.toLowerCase() === 'admin';
+
+      li.innerHTML = `
+    <span class="msg-time">[${time}]</span>
+    <span class="username ${isAdmin ? 'admin' : ''}" data-id="${msg.senderId}">
+      ${msg.senderName}:
+    </span>
+    <span class="msg-text">${msg.isDeleted ? '🗑️ Mensaje eliminado por moderador' : escapeHTML(msg.text)}</span>
+  `;
+
+      messages.appendChild(li);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+
+    // Click en nombre → abrir DM
+    messages.addEventListener('click', (e) => {
+      const a = e.target.closest('.username-link');
+      if (!a) return;
+      const toUserId = a.dataset.user;
+      const name = a.dataset.name || 'Usuario';
+      openDM(toUserId, name);
+    });
+
+    function openDM(toUserId, name) {
+      currentDMUserId = toUserId;
+      dmWithName.textContent = name;
+      dmPanel.classList.add('active');
+      dmMessages.innerHTML = '';
+      socket.emit('dm:history', { withUserId: toUserId });
+    }
+
+    dmClose.addEventListener('click', () => {
+      currentDMUserId = null;
+      dmPanel.classList.remove('active');
+      dmMessages.innerHTML = '';
+    });
+
+    // Historial DM
+    socket.on('dm:history', ({ withUserId, messages: list }) => {
+      if (currentDMUserId !== withUserId) return; // otro hilo
+      dmMessages.innerHTML = '';
+      list.forEach(m => addDMMsg(m));
+      dmMessages.scrollTop = dmMessages.scrollHeight;
+    });
+
+    // Mensaje DM entrante (puede venir de mí o del otro)
+    socket.on('dm:message', (doc) => {
+      // doc: {_id, room:'dm:a:b', senderId, senderName, text, createdAt}
+      // Solo pintar si es el hilo abierto
+      if (!currentDMUserId) return;
+      const ids = roomToPair(doc.room);
+      if (!ids) return;
+      if (ids.includes(currentDMUserId)) {
+        addDMMsg(doc);
+        dmMessages.scrollTop = dmMessages.scrollHeight;
+      }
+    });
+
+    // Enviar DM
+    dmForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const text = dmInput.value.trim();
+      if (!text || !currentDMUserId) return;
+      socket.emit('dm:message', { toUserId: currentDMUserId, text });
+      dmInput.value = '';
+    });
+
+    function addMsg(msg) {
+      const li = document.createElement('li');
+      li.classList.add('message');
+      if (msg.senderId === socket.userId) li.classList.add('self'); // marcar si es tuyo
+
+      const date = new Date(msg.createdAt || msg.time);
+      const time = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      // Determinar si es admin
+      const isAdmin = msg.senderName?.toLowerCase() === 'admin';
+
+      li.innerHTML = `
+    <span class="msg-time">[${time}]</span>
+    <span class="username ${isAdmin ? 'admin' : ''}" data-id="${msg.senderId}">
+      ${msg.senderName}:
+    </span>
+    <span class="msg-text">${msg.isDeleted ? '🗑️ Mensaje eliminado por moderador' : msg.text}</span>
+  `;
+
+      messages.appendChild(li);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+
+    function roomToPair(room) {
+      // room = 'dm:<a>:<b>'
+      if (!room || !room.startsWith('dm:')) return null;
+      return room.split(':').slice(1);
+    }
+
+    // pequeño escape para texto
+    function escapeHTML(str) {
+      return String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;');
+    }
+  </script>
+</body>
+
+</html>

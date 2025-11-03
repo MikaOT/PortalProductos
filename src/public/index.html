@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Portal de Productos</title>
+
+  <!-- Enlace correcto al CSS -->
+  <link rel="stylesheet" href="/styles.css" />
+
+  <!-- Fuente moderna (opcional) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <header>
+    <h1>Portal de productos</h1>
+    <nav>
+      <button id="btnLoginView">Login</button>
+      <button id="btnRegisterView">Registro</button>
+      <button id="btnLogout" class="hidden">Salir</button>
+      <a id="btnChat" class="hidden" href="/chat.html">Chat</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Vistas de auth -->
+    <section id="authSection" class="card">
+      <h2 id="authTitle">Login</h2>
+      <form id="authForm">
+        <input name="username" id="username" placeholder="Usuario" class="hidden" />
+        <input name="email" id="email" placeholder="Email" type="email" required />
+        <input name="password" id="password" placeholder="Contraseña" type="password" required />
+        <select id="role" class="hidden">
+          <option value="user">Usuario</option>
+          <option value="admin">Administrador</option>
+        </select>
+        <button type="submit">Enviar</button>
+      </form>
+      <p id="authMsg"></p>
+    </section>
+
+    <!-- Listado productos -->
+    <section id="productsSection" class="card hidden">
+      <div class="toolbar">
+        <h2>Productos</h2>
+        <button id="btnNew" class="hidden">Nuevo producto</button>
+      </div>
+      <div id="products"></div>
+    </section>
+
+    <!-- Modal producto -->
+    <dialog id="productModal">
+      <form id="productForm" method="dialog">
+        <input id="pName" placeholder="Nombre" required />
+        <input id="pPrice" placeholder="Precio" type="number" step="0.01" required />
+        <input id="pImage" placeholder="URL imagen (opcional)" />
+        <textarea id="pDesc" placeholder="Descripción"></textarea>
+        <menu>
+          <button id="saveProduct" value="save">Guardar</button>
+          <button id="cancelProduct" value="cancel">Cancelar</button>
+        </menu>
+      </form>
+    </dialog>
+  </main>
+
+  <script src="/client.js" type="module"></script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+:root { --bg:#0b1020; --card:#121a36; --text:#e9eef5; --muted:#9fb0d0; --acc:#6aa8ff; }
+*{ box-sizing:border-box; }
+body{ margin:0; font-family:system-ui,Segoe UI,Roboto,Ubuntu,Arial; color:var(--text); background:linear-gradient(180deg,#0b1020,#0f1630); min-height:100vh; }
+header{ display:flex; justify-content:space-between; align-items:center; padding:1rem 1.2rem; position:sticky; top:0; background:rgba(11,16,32,0.8); backdrop-filter:blur(8px); border-bottom:1px solid #20305e; }
+h1{ margin:0; font-size:1.25rem; }
+nav > *{ margin-left:.5rem; }
+button,a{ background:var(--acc); color:#001431; border:none; padding:.5rem .75rem; border-radius:.6rem; text-decoration:none; font-weight:600; }
+button:hover,a:hover{ filter:brightness(1.1); }
+.card{ background:var(--card); margin:1.2rem; padding:1rem; border-radius:1rem; box-shadow:0 6px 24px rgba(0,0,0,.3); }
+.hidden{ display:none; }
+.toolbar{ display:flex; align-items:center; justify-content:space-between; }
+#products{ display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:1rem; margin-top:1rem; }
+.product{ border:1px solid #20305e; border-radius:.8rem; padding:.75rem; background:#101a33; }
+.product img{ width:100%; height:140px; object-fit:cover; border-radius:.6rem; background:#0b1020; }
+.product h3{ margin:.5rem 0 .25rem; }
+.product .price{ color:#a7ffcc; font-weight:700; }
+#messages{ list-style:none; padding:0; max-height:60vh; overflow:auto; }
+#messages li{ padding:.35rem .25rem; border-bottom:1px solid #20305e; }
+#chatForm{ display:flex; gap:.5rem; margin-top:.5rem; }
+#chatForm input{ flex:1; }
+dialog{ border:none; border-radius:1rem; padding:1rem; background:var(--card); color:var(--text); }
+dialog::backdrop{ backdrop-filter:blur(2px); background:rgba(0,0,0,.5) }
+input,select,textarea{ width:100%; padding:.6rem .7rem; border-radius:.6rem; border:1px solid #20305e; background:#0b132a; color:var(--text); }
+
+/* Animaciones suaves */
+button, a, input, textarea, select {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Hover en productos */
+.product:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+/* Chat tipo burbujas */
+#messages {
+  display: flex;
+  flex-direction: column;
+}
+#messages li {
+  margin: 6px 0;
+  padding: 8px 12px;
+  border-radius: 12px;
+  max-width: 70%;
+}
+#messages li:nth-child(odd) {
+  background: #16244e;
+  align-self: flex-start;
+}
+#messages li:nth-child(even) {
+  background: #2d4db8;
+  color: white;
+  align-self: flex-end;
+}
+
+/* --- Chat general --- */
+#messages {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.message {
+  padding: 8px 12px;
+  border-radius: 12px;
+  max-width: 75%;
+  word-wrap: break-word;
+  background-color: #16244e;
+  color: #e9eef5;
+}
+
+/* Mensajes del propio usuario */
+.message.self {
+  background-color: #2d4db8;
+  color: #ffffff;
+  align-self: flex-start; /* Todos a la izquierda */
+}
+
+/* Nombre de usuario */
+.username {
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Admin en rojo */
+.username.admin {
+  color: #ff4b4b;
+}
+
+/* Hora del mensaje */
+.msg-time {
+  opacity: 0.6;
+  font-size: 0.85em;
+}
+
+/* --- Estilos del chat --- */
+.message {
+  padding: 8px 12px;
+  border-radius: 12px;
+  max-width: 75%;
+  word-wrap: break-word;
+  background-color: #16244e;
+  color: #e9eef5;
+  margin-bottom: 4px;
+}
+
+/* Mensajes propios */
+.message.self {
+  background-color: #2d4db8;
+  color: #ffffff;
+  align-self: flex-start;
+}
+
+/* Admin */
+.username.admin {
+  color: #ff4b4b;
+  font-weight: 700;
+}
+
+/* Hora */
+.msg-time {
+  opacity: 0.6;
+  font-size: 0.85em;
+  margin-right: 6px;
+}
+
+.balance {
+  color: #f0c75e;
+  font-weight: 600;
+  margin-right: 1rem;
+}
+
