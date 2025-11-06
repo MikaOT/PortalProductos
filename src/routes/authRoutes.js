@@ -63,4 +63,23 @@ router.get('/me', authenticateJWT, async (req, res) => {
   }
 });
 
+// 🔁 Renovar token (para sockets u otras sesiones)
+router.post('/refresh', authenticateJWT, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
+
+    const newToken = jwt.sign(
+      { id: user._id, role: user.role, username: user.username },
+      config.jwtSecret,
+      { expiresIn: '2h' }
+    );
+
+    res.json({ newToken });
+  } catch (err) {
+    res.status(500).json({ message: 'Error al renovar token', error: err.message });
+  }
+});
+
+
 export default router;

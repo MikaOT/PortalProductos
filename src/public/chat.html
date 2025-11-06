@@ -103,11 +103,35 @@
       auth: { token },
       transports: ['websocket'] // más estable en producción
     });
-
-    socket.on('connect_error', (err) => {
-      alert('No autorizado o error de conexión en socket');
+    
+    socket.on('connect_error', async (err) => {
       console.error('❌ Error socket:', err.message);
+
+      if (err.message === 'jwt expired') {
+        console.log('⚠️ Token expirado. Intentando renovar...');
+        try {
+          const res = await fetch('/api/auth/refresh', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+          });
+
+          if (!res.ok) throw new Error('No se pudo renovar token');
+          const data = await res.json();
+          localStorage.setItem('token', data.newToken);
+          socket.auth.token = data.newToken;
+          socket.connect(); // reconecta con el nuevo token
+          console.log('🔄 Token renovado y socket reconectado');
+        } catch (refreshErr) {
+          console.error('❌ Error al renovar token:', refreshErr);
+          alert('Sesión expirada. Vuelve a iniciar sesión.');
+          localStorage.removeItem('token');
+          window.location.href = '/';
+        }
+      } else {
+        alert('Error de conexión o autenticación en socket.');
+      }
     });
+
 
     // === Elementos del DOM ===
     const messages = document.getElementById('messages');

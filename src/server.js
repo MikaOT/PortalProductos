@@ -77,23 +77,28 @@ async function connectDatabase() {
 
 await connectDatabase();
 
-// --- 🔐 Autenticación de Socket.IO ---
 io.use((socket, next) => {
-  try {
-    const token = socket.handshake.auth?.token;
-    if (!token) {
-      console.warn('❌ Conexión rechazada: sin token');
-      return next(new Error('No token'));
-    }
+  const token = socket.handshake.auth?.token;
+  if (!token) {
+    console.warn('❌ Conexión rechazada: sin token');
+    return next(new Error('No token'));
+  }
 
+  try {
     const payload = jwt.verify(token, config.jwtSecret);
-    socket.user = payload; // ✅ Guardamos datos del usuario
+    socket.user = payload;
     next();
   } catch (err) {
+    if (err.name === 'TokenExpiredError') {
+      console.warn('⚠️ Token expirado para socket (id:', socket.id, ')');
+      return next(new Error('jwt expired')); // mensaje claro al cliente
+    }
     console.error('❌ Error de autenticación en socket:', err.message);
     next(new Error('Auth error'));
   }
 });
+
+
 
 // --- Socket.IO handlers ---
 io.on('connection', async (socket) => {

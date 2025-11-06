@@ -64,4 +64,11 @@ router.post('/products/:id/delete', authenticateJWT, requireAdmin, async (req, r
   res.json({ ok: true, product: p });
 });
 
+// 🧹 Eliminar (ocultar) mensaje del chat
+router.post('/chat/:id/delete', authenticateJWT, requireAdmin, async (req, res) => {
+  const msg = await ChatMessage.findByIdAndUpdate(req.params.id, { isDeleted: true }, { new: true });
+  if (!msg) return res.status(404).json({ message: 'Mensaje no encontrado' });
+  res.json({ ok: true, msg });
+});
+
 export default router;
