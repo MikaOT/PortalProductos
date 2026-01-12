@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # 🚀 NEXUS STORE: Actualización Visual y Funcional (v2.0)
 
 Se ha realizado una reingeniería completa del Frontend manteniendo intacta la lógica de negocio (Backend GraphQL + MongoDB). Las mejoras incluyen:
@@ -26,9 +25,10 @@ Layout Grid Avanzado: Diseño de dos columnas (Catálogo + Sidebar de Carrito fi
 Panel de Administración Profesional: Transformación de listas simples en tablas de datos estructuradas con distintivos (badges) para roles y estados.
 
 Feedback Visual: Indicadores de stock en tiempo real y estados vacíos amigables en el carrito.
-=======
-# Información de uso
 
-Link de la pagina con render: https://portalproductos.onrender.com/
+### Actualizacion Alojamiento en Nube 
 
->>>>>>> a656914b5d09c52de67d2f4a9759ff211582134c
+La version 1 del portal de productos esta alojada en la nube con la herramienta [RENDER](http://render.com/)
+Para la segunda version, ya actualizada con graphql y el e-commerce desarrollado, no se ha implementado alojamiento en la nube, pero se podra probar en localhost.
+
+
