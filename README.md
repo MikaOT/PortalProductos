@@ -1,6 +1,5 @@
 # 🚀 Nexus Store (Portal de Productos V2)
 
-![Project Banner](https://via.placeholder.com/1200x300/6366f1/ffffff?text=NEXUS+STORE+V2)
 
 > **E-commerce moderno Fullstack** con arquitectura híbrida (REST + GraphQL), comunicación en tiempo real y una interfaz de usuario Premium con estilo Glassmorphism.
 
@@ -40,19 +39,6 @@ Se ha migrado gran parte de la lógica a **GraphQL** para una gestión de datos 
 * **Real-time Chat:** Chat global y privado implementado con **Socket.IO**.
 * **Integración IA:** Bot asistente integrado en el chat (vía OpenAI API).
 * **Seguridad:** Autenticación JWT y protección de rutas por roles.
-
----
-
-## 📸 Capturas de Pantalla
-
-| Tienda (Catálogo) | Panel Admin |
-|:---:|:---:|
-| ![Tienda](https://via.placeholder.com/400x250?text=Captura+Tienda) | ![Admin](https://via.placeholder.com/400x250?text=Captura+Admin) |
-| *Vista principal con Glassmorphism* | *Gestión de usuarios y productos* |
-
-> *Nota: Reemplaza estas URLs con las imágenes reales de tu proyecto.*
-
----
 
 ## 🚀 Instalación y Puesta en Marcha
 
