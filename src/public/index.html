@@ -3,67 +3,94 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Portal de Productos</title>
-
-  <!-- Enlace correcto al CSS -->
+  <title>Nexus Store | E-commerce</title>
   <link rel="stylesheet" href="/styles.css" />
-
-  <!-- Fuente moderna (opcional) -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
-
 <body>
-  <header>
-    <h1>Portal de productos</h1>
-    <nav>
-      <button id="btnLoginView">Login</button>
-      <button id="btnRegisterView">Registro</button>
-      <button id="btnLogout" class="hidden">Salir</button>
-      <a id="btnChat" class="hidden" href="/chat.html">Chat</a>
-    </nav>
-  </header>
+  <div id="toast-container"></div>
 
-  <main>
-    <!-- Vistas de auth -->
-    <section id="authSection" class="card">
-      <h2 id="authTitle">Login</h2>
-      <form id="authForm">
-        <input name="username" id="username" placeholder="Usuario" class="hidden" />
-        <input name="email" id="email" placeholder="Email" type="email" required />
-        <input name="password" id="password" placeholder="Contraseña" type="password" required />
-        <select id="role" class="hidden">
-          <option value="user">Usuario</option>
-          <option value="admin">Administrador</option>
-        </select>
-        <button type="submit">Enviar</button>
-      </form>
-      <p id="authMsg"></p>
-    </section>
+  <div class="container">
+    <header>
+      <div class="logo"><i class="ph ph-hexagon"></i> NEXUS STORE</div>
+      <nav style="display: flex; gap: 10px;">
+        <button id="btnLoginView" class="btn btn-ghost">Login</button>
+        <button id="btnRegisterView" class="btn btn-ghost">Registro</button>
+        <button id="btnLogout" class="btn btn-danger hidden"><i class="ph ph-sign-out"></i></button>
+        <a id="btnChat" class="btn btn-primary hidden" href="/chat.html"><i class="ph ph-chat-circle-text"></i> Chat</a>
+      </nav>
+    </header>
 
-    <!-- Listado productos -->
-    <section id="productsSection" class="card hidden">
-      <div class="toolbar">
-        <h2>Productos</h2>
-        <button id="btnNew" class="hidden">Nuevo producto</button>
+    <main>
+      <section id="authSection" class="card" style="max-width: 400px; margin: 40px auto;">
+        <h2 id="authTitle" style="text-align: center; margin-bottom: 20px;">Bienvenido</h2>
+        <form id="authForm" style="display: flex; flex-direction: column; gap: 15px;">
+          <input id="username" placeholder="Nombre de usuario" class="hidden" />
+          <input id="email" placeholder="Correo electrónico" type="email" required />
+          <input id="password" placeholder="Contraseña" type="password" required />
+          <button type="submit" class="btn" style="justify-content: center;">Continuar <i class="ph ph-arrow-right"></i></button>
+        </form>
+        <p id="authMsg" style="color: var(--danger); text-align: center; margin-top: 10px;"></p>
+      </section>
+
+      <div id="mainLayout" class="hidden" style="display: grid; grid-template-columns: 1fr 350px; gap: 30px;">
+        
+        <section>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="margin:0; display: flex; align-items: center; gap: 10px;">
+              <i class="ph ph-fire" style="color: var(--accent);"></i> Catálogo
+            </h2>
+            <button id="btnNewProduct" class="btn btn-primary hidden"><i class="ph ph-plus"></i> Nuevo Producto</button>
+          </div>
+          <div id="products" class="grid-products"></div>
+        </section>
+
+        <aside>
+          <div class="card" style="position: sticky; top: 20px;">
+            <h2 style="margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px;">
+              <i class="ph ph-shopping-cart"></i> Tu Cesta
+            </h2>
+            <div id="cartItems" style="max-height: 400px; overflow-y: auto;"></div>
+            <div style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 15px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 1.2rem; font-weight: bold;">
+                <span>Total</span>
+                <span id="cartTotal" style="color: var(--success);">0.00 €</span>
+              </div>
+              <button id="btnCheckout" class="btn btn-success" style="width: 100%; justify-content: center;">
+                Confirmar Pedido <i class="ph ph-check-circle"></i>
+              </button>
+            </div>
+          </div>
+        </aside>
       </div>
-      <div id="products"></div>
-    </section>
 
-    <!-- Modal producto -->
+      <section id="adminPanel" class="card hidden" style="margin-top: 40px; border-color: var(--accent);">
+        <h2 style="color: var(--accent); margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+          <i class="ph ph-shield-check"></i> Panel de Control
+        </h2>
+        <div class="admin-grid">
+          <div><h3>Usuarios</h3><div id="adminUsersList"></div></div>
+          <div><h3>Pedidos</h3><div id="adminOrdersList"></div></div>
+        </div>
+      </section>
+    </main>
+
     <dialog id="productModal">
-      <form id="productForm" method="dialog">
-        <input id="pName" placeholder="Nombre" required />
-        <input id="pPrice" placeholder="Precio" type="number" step="0.01" required />
-        <input id="pImage" placeholder="URL imagen (opcional)" />
-        <textarea id="pDesc" placeholder="Descripción"></textarea>
-        <menu>
-          <button id="saveProduct" value="save">Guardar</button>
-          <button id="cancelProduct" value="cancel">Cancelar</button>
-        </menu>
-      </form>
+      <div class="modal-content">
+        <button class="close-btn" onclick="closeModal()"><i class="ph ph-x"></i></button>
+        <h2 id="modalTitle" style="margin-top:0;">Gestión Producto</h2>
+        <form id="productForm">
+          <input type="hidden" id="prodId">
+          <div class="form-group"><label>Nombre</label><input id="prodName" required></div>
+          <div class="form-group"><label>Descripción</label><input id="prodDesc"></div>
+          <div class="form-group"><label>Precio (€)</label><input id="prodPrice" type="number" step="0.01" required></div>
+          <div class="form-group"><label>Stock</label><input id="prodStock" type="number" required></div>
+          <div class="form-group"><label>URL Imagen</label><input id="prodImg"></div>
+          <button type="submit" class="btn btn-primary" style="width:100%">Guardar</button>
+        </form>
+      </div>
     </dialog>
-  </main>
-
-  <script src="/client.js" type="module"></script>
+  </div>
+  <script src="/client.js"></script>
 </body>
 </html>
